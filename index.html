@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPv4 Subnet Visualizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <header class="header">
+    <div class="header-badge">IPv4 · Sub-redes · Binário</div>
+    <h1>Subnet Visualizer</h1>
+    <p>aprendizado interativo de endereçamento IPv4</p>
+  </header>
+
+  <!-- Input -->
+  <div class="card">
+    <div class="card-label">Endereço e máscara</div>
+    <div class="input-block">
+      <div class="input-line">
+        <span class="field-lbl">IP</span>
+        <div class="octets">
+          <div class="ow"><input class="oi" type="number" id="ip0" min="0" max="255" value="192"></div><span class="dot">.</span>
+          <div class="ow"><input class="oi" type="number" id="ip1" min="0" max="255" value="168"></div><span class="dot">.</span>
+          <div class="ow"><input class="oi" type="number" id="ip2" min="0" max="255" value="10"></div><span class="dot">.</span>
+          <div class="ow"><input class="oi" type="number" id="ip3" min="0" max="255" value="25"></div>
+        </div>
+      </div>
+      <div class="input-line">
+        <span class="field-lbl">Máscara</span>
+        <div class="mask-wrap">
+          <select class="sel" id="cidr-sel" onchange="onCidrChange()"></select>
+          <div class="mask-manual">
+            <div class="ow" style="margin-left:8px"><input class="oi" type="number" id="mk0" min="0" max="255" value="255"></div><span class="dot">.</span>
+            <div class="ow"><input class="oi" type="number" id="mk1" min="0" max="255" value="255"></div><span class="dot">.</span>
+            <div class="ow"><input class="oi" type="number" id="mk2" min="0" max="255" value="255"></div><span class="dot">.</span>
+            <div class="ow"><input class="oi" type="number" id="mk3" min="0" max="255" value="0"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="abtn" onclick="syncFromInputs()">Analisar</button>
+      <button class="pbtn" onclick="loadPreset('192.168.1.1',24)">/24 Classe C</button>
+      <button class="pbtn" onclick="loadPreset('10.0.0.1',8)">/8 Classe A</button>
+      <button class="pbtn" onclick="loadPreset('172.16.0.1',16)">/16 Classe B</button>
+      <button class="pbtn" onclick="loadPreset('192.168.1.64',26)">/26 Sub</button>
+      <button class="pbtn" onclick="loadPreset('192.168.1.100',28)">/28 Sub</button>
+    </div>
+  </div>
+
+  <!-- Bits -->
+  <div class="card">
+    <div class="card-label">Visualização binária <span style="color:var(--text3);font-size:9px">— clique nos bits de IP ou Máscara para alternar</span></div>
+    <div id="bits-container"></div>
+    <div class="meta-row">
+      <span id="cidr-display" class="cidr-tag">/24</span>
+      <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3)"><span style="color:#ef4444">|</span> divisão CIDR</span>
+    </div>
+    <div class="leg-wrap" id="legend-row"></div>
+  </div>
+
+  <!-- Steps -->
+  <div class="card">
+    <div class="card-label">Cálculo passo a passo</div>
+    <div class="steps" id="steps-container"></div>
+  </div>
+
+  <!-- Results -->
+  <div class="card">
+    <div class="card-label">Resumo da sub-rede</div>
+    <div class="rg" id="results"></div>
+  </div>
+
+
+  <!-- IPv6 divider -->
+  <div class="v6-divider">
+    <div class="v6-divider-line"></div>
+    <div class="v6-divider-badge">IPv6 · Simplificação</div>
+    <div class="v6-divider-line"></div>
+  </div>
+
+  <!-- IPv6 Quiz card -->
+  <div class="card">
+    <div class="card-label">Quiz — simplifique o endereço IPv6</div>
+
+    <div class="v6-score-row">
+      <div class="v6-score-item"><div class="v6-score-val" id="v6-correct">0</div><div class="v6-score-lbl">Corretos</div></div>
+      <div class="v6-score-item"><div class="v6-score-val" id="v6-tries">0</div><div class="v6-score-lbl">Tentativas</div></div>
+      <div class="v6-score-item"><div class="v6-score-val" id="v6-streak">0</div><div class="v6-score-lbl">Sequência</div></div>
+    </div>
+
+    <p style="font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-bottom:10px">Endereço completo gerado:</p>
+    <div class="v6-addr-box" id="v6-full"></div>
+
+    <p style="font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-bottom:8px">
+      Digite a forma simplificada — grupos separados por <span style="color:#a78bfa">:</span>, use <span style="color:#a78bfa">::</span> para a maior sequência de zeros consecutivos:
+    </p>
+
+    <div class="v6-groups" id="v6-inputs"></div>
+
+    <div class="v6-btn-row">
+      <button class="v6-btn v6-btn-check" onclick="v6Check()">Verificar</button>
+      <button class="v6-btn v6-btn-new"   onclick="v6New()">Novo endereço</button>
+      <button class="v6-btn v6-btn-show"  onclick="v6Show()">Ver resposta</button>
+    </div>
+
+    <div class="v6-fb" id="v6-fb"></div>
+    <div class="v6-diff" id="v6-diff" style="display:none"></div>
+  </div>
+
+  <!-- IPv6 Rules card -->
+  <div class="card">
+    <div class="card-label">Regras de simplificação IPv6</div>
+    <div class="v6-rules">
+      <div class="v6-rule">
+        <div class="v6-rule-t">Regra 1 — zeros à esquerda</div>
+        <div class="v6-rule-b">Remova zeros à esquerda de cada grupo de 16 bits.<br><span style="color:var(--text3)">0042</span> → <span style="color:#a78bfa">42</span> &nbsp;|&nbsp; <span style="color:var(--text3)">0000</span> → <span style="color:#a78bfa">0</span></div>
+      </div>
+      <div class="v6-rule">
+        <div class="v6-v6-rule-t v6-rule-t">::  — duplo dois-pontos</div>
+        <div class="v6-rule-b">Use <span style="color:#a78bfa">::</span> para substituir a maior sequência contínua de grupos <span style="color:#a78bfa">0000</span>. Só pode aparecer uma vez no endereço.</div>
+      </div>
+      <div class="v6-rule">
+        <div class="v6-rule-t">Formato final</div>
+        <div class="v6-rule-b">8 grupos de 16 bits em hexadecimal separados por <span style="color:#a78bfa">:</span>. Com :: o número de grupos visíveis será menor que 8.</div>
+      </div>
+      <div class="v6-rule">
+        <div class="v6-rule-t">Exemplo</div>
+        <div class="v6-rule-b"><span style="color:var(--text3)">2001:0db8:0000:0000:0001:0000:0000:0001</span><br>→ <span style="color:#a78bfa">2001:db8::1:0:0:1</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/script.js"></script>
+</body>
+</html>

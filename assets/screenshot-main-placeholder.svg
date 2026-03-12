@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#0d0f14"/>
+  <rect x="40" y="40" width="1200" height="640" rx="20" fill="#13161e" stroke="#2d3345"/>
+  <text x="640" y="320" text-anchor="middle" fill="#e8eaf0" font-size="46" font-family="Arial, sans-serif">Main Screenshot Placeholder</text>
+  <text x="640" y="380" text-anchor="middle" fill="#8b91a8" font-size="24" font-family="Arial, sans-serif">Substitua por PNG real (assets/screenshot-main.png)</text>
+</svg>
